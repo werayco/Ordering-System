@@ -1,0 +1,48 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: chatdome-postgres
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U theadmin -d dome"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mynet
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    networks:
+      - mynet
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.60
+    ports:
+      - "16686:16686"
+      - "4317:4317" 
+    networks:
+      - mynet
+
+volumes:
+  db_data:
+  esdata:
+
+networks:
+  mynet:
+    external: true
