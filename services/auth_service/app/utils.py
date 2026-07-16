@@ -2,14 +2,13 @@ from datetime import datetime, timedelta, timezone
 from uuid import UUID
 import bcrypt
 from jose import jwt, JWTError
-from sqlalchemy import select, and_
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends, HTTPException, WebSocket, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.config import settings
 from app.models.user import User
 from app.db.session import get_db
-from app.models import Conversation, ConversationType
 from sqlalchemy.ext.asyncio import AsyncSession
 from jose import jwt, JWTError
 
@@ -68,7 +67,6 @@ async def authenticate_endpoints(token: HTTPAuthorizationCredentials = Depends(b
 
 
 async def get_current_user(token: HTTPAuthorizationCredentials = Depends(bearer_scheme),db: AsyncSession = Depends(get_db),) -> User:
-    
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid or expired token",
@@ -104,7 +102,6 @@ def issue_access_token(user: User) -> str:
 def issue_refresh_token(user: User) -> str:
     return _build_token(user, "refresh", timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
 
-
 async def get_user_from_refresh_token(
     refresh_token: str,
     db: AsyncSession,
@@ -136,24 +133,3 @@ def verify_password(password: str, hashed_password: str) -> bool:
     password_bytes = password.encode('utf-8')
     hashed_bytes = hashed_password.encode('utf-8')    
     return bcrypt.checkpw(password_bytes, hashed_bytes)
-
-async def _resolve_group_id(payload: GroupModify, db: AsyncSession) -> UUID:
-    if not payload.group_name:
-        raise HTTPException(status_code=400, detail="group_name is required")
-
-    rows = (await db.execute(
-        select(Conversation.id).where(
-            and_(
-                Conversation.name == payload.group_name.strip(),
-                Conversation.type == ConversationType.GROUP,
-            )
-        )
-    )).scalars().all()
-    if not rows:
-        raise HTTPException(status_code=404, detail="Group not found")
-    if len(rows) > 1:
-        raise HTTPException(
-            status_code=409,
-            detail="Multiple groups share that name; rename one so the name is unique",
-        )
-    return rows[0]
