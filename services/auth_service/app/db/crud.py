@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_
 from app.models.user import User
 from app.db.session import get_db
-from app.utils.helpers import *
+from app.utils import *
 
 class UserCrud:
     @staticmethod

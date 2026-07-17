@@ -1,6 +1,9 @@
 .PHONY: build-all build-auth-service build-inventory-service build-notification-service build-order-service build-search-service build-user-service
 
 IMAGE_REPO ?= ordering-system
+TOPIC ?= inventory
+PARTITIONS ?= 3
+REPLICATION ?= 1
 
 build-auth-service:
 	docker build -t $(IMAGE_REPO)-auth-service:latest ./services/auth-service
@@ -23,7 +26,10 @@ build-user-service:
 build-all: build-auth-service build-inventory-service build-notification-service build-order-service build-search-service build-user-service
 
 create-topics:
-	python -m shared.kafka.create_topics
+	python -m shared.kafka.create_topics --topic $(TOPIC) --partitions $(PARTITIONS) --replication $(REPLICATION)
+
+run:
+	docker-compose -f shared/docker-compose.yml up -d
 
 git:
 	git add .

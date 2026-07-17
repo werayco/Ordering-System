@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.schemas import InventorySchema
+from app.schemas import *
+from sqlalchemy import select
 from app.models.product import Inventory
 
 class InventoryCRUD:
@@ -30,8 +31,8 @@ class InventoryCRUD:
             raise HTTPException(status_code=500, detail=str(e))
 
     @staticmethod
-    async def update_inventory_item(db: AsyncSession, inventory_id: int, inventory: InventorySchema):
-        record = await db.get(Inventory, inventory_id)
+    async def update_inventory_item(db: AsyncSession, inventory: InventorySchema):
+        record = await db.get(Inventory, inventory.sku)
         if not record:
             raise HTTPException(status_code=404, detail="Inventory item not found")
         try:

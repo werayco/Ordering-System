@@ -17,20 +17,6 @@ REFRESH_TOKEN_EXPIRE_DAYS = 7
 
 bearer_scheme = HTTPBearer()
 
-async def authenticate_ws(websocket: WebSocket, db: AsyncSession):
-    token = websocket.query_params.get("token")
-    if not token:
-        return None
-    try:
-        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=["HS256"])
-        if payload.get("type") != "access":
-            return None
-        user_id = UUID(payload["sub"])
-    except (JWTError, ValueError, KeyError):
-        return None
-    result = await db.execute(select(User).where(User.id == user_id))
-    return result.scalar_one_or_none()
-
 async def check_user_exists(username: str, db: AsyncSession):
     normalized_username = username.strip().lower()
     print(f"checking if user exists with username: {normalized_username}")
@@ -50,7 +36,7 @@ async def authenticate_endpoints(token: HTTPAuthorizationCredentials = Depends(b
     if not token:
         return {"response": "token missing", "status": "failed"}
     try:
-        payload = jwt.decode(token.credentials, settings.JWT_SECRET, algorithms=["HS256"])
+        payload = jwt.decode(token.credentials, settings.S, algorithms=["HS256"])
         if payload.get("type") != "access":
             return {"response": "invalid or expired token", "status": "failed"}
         user_id = UUID(payload["sub"])
@@ -73,7 +59,7 @@ async def get_current_user(token: HTTPAuthorizationCredentials = Depends(bearer_
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token.credentials, settings.JWT_SECRET, algorithms=["HS256"])
+        payload = jwt.decode(token.credentials, settings.SECRET_KEY, algorithms=["HS256"])
         if payload.get("type") != "access":
             raise credentials_exception
         user_id = UUID(payload["sub"])
@@ -96,7 +82,7 @@ def _build_token(user: User, token_type: str, expires_delta: timedelta) -> str:
     return jwt.encode(payload, settings.JWT_SECRET, algorithm="HS256")
 
 
-def issue_access_token(user: User) -> str:
+def issue_access_token(user) -> str:
     return _build_token(user, "access", timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
 
 def issue_refresh_token(user: User) -> str:

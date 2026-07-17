@@ -6,3 +6,6 @@ class InventorySchema(BaseModel):
     price: float
     sku: str
     quantity: int
+
+class InventoryDeleteSchema(BaseModel):
+    sku: str
