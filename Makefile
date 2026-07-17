@@ -22,6 +22,9 @@ build-user-service:
 
 build-all: build-auth-service build-inventory-service build-notification-service build-order-service build-search-service build-user-service
 
+create-topics:
+	python -m shared.kafka.create_topics
+
 git:
 	git add .
 	git commit -m "$(filter-out $@,$(MAKECMDGOALS))"
