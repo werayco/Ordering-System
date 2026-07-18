@@ -72,7 +72,7 @@ def _build_token(user: User, token_type: str, expires_delta: timedelta) -> str:
         "sub": str(user.id),
         "iat": now,
         "exp": now + expires_delta,
-        "type": token_type
+        "type": token_type,
     }
     return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 

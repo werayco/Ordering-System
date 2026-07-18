@@ -3,21 +3,23 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from app.schemas import InventorySchema, InventoryUpdateSchema
 from app.controllers.inventory_controller import InventoryCRUD
+from app.utils import get_current_user_dep
+from app.models.employee import Employee
 
-router = APIRouter(prefix="/inventory",tags=["inventory"])
+router = APIRouter(prefix="/api/v1/inventory",tags=["inventory"])
 
 @router.post("/add")
-async def add_inventory_item(db: AsyncSession = Depends(get_db)):
-    return InventoryCRUD.add_inventory_item(db)
+async def add_inventory_item(db: AsyncSession = Depends(get_db), inventory: InventorySchema = None, current_user: Employee = Depends(get_current_user_dep(Employee))):
+    return InventoryCRUD.add_inventory_item(db, inventory, current_user)
 
 @router.get("/get")
-async def get_inventory_item(db: AsyncSession = Depends(get_db), inventory_id: int = None):
+async def get_inventory_item(db: AsyncSession = Depends(get_db), inventory_id: int = None, current_user: Employee = Depends(get_current_user_dep(Employee))):
     return InventoryCRUD.get_inventory_item(db, inventory_id)
 
 @router.put("/update")
-async def update_inventory_item(db: AsyncSession = Depends(get_db), inventory: InventorySchema = None):
-    return InventoryCRUD.update_inventory_item(db, inventory)
+async def update_inventory_item(db: AsyncSession = Depends(get_db), inventory: InventorySchema = None, current_user: Employee = Depends(get_current_user_dep(Employee))):
+    return InventoryCRUD.update_inventory_item(db, inventory, current_user)
 
 @router.delete("/delete")
-async def delete_inventory_item(db: AsyncSession = Depends(get_db)):
-    return InventoryCRUD.delete_inventory_item(db)
+async def delete_inventory_item(db: AsyncSession = Depends(get_db), inventory_id: int = None, current_user: Employee = Depends(get_current_user_dep(Employee))):
+    return InventoryCRUD.delete_inventory_item(db, inventory_id, current_user)

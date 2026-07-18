@@ -2,14 +2,18 @@ from select import select
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas import *
-from app.schemas import InventorySchema
+from app.schemas import InventorySchema, Roles
 from app.kafka.producer import kafka_manager
-from app.models.product import Inventory
+from app.models import Inventory, Employee
+
 
 class InventoryCRUD:
     @staticmethod
-    async def add_inventory_item(db: AsyncSession, inventory: InventorySchema):
+    async def add_inventory_item(db: AsyncSession, inventory: InventorySchema, current_user: Employee):
         try:
+            if current_user.role == Roles.VIEWER.value:
+                return {"message": "You do not have the necessary permission to add a product, contact your admin or inventory manager"}
+            
             record = Inventory(**inventory.model_dump())
             db.add(record)
             await db.commit()
@@ -21,21 +25,27 @@ class InventoryCRUD:
             raise HTTPException(status_code=500, detail=str(e))
 
     @staticmethod
-    async def delete_inventory_item(db: AsyncSession, inventory_id: int):
+    async def delete_inventory_item(db: AsyncSession, inventory_id: int, current_user: Employee):
+        if current_user.role == Roles.VIEWER.value:
+            return {"message": "You do not have the necessary permission to delete a product from the inventory, contact your admin or inventory manager"}
+            
         record = await db.get(Inventory, inventory_id)
         if not record:
             raise HTTPException(status_code=404, detail="Inventory item not found")
         try:
             await db.delete(record)
             await db.commit()
-            kafka_manager.produce(topic="inventory", key="inventory.deleted", value=inventory.model_dump())
+            kafka_manager.produce(topic="inventory", key="inventory.deleted", value=record.model_dump())
             return {"message": "Inventory item deleted successfully"}
         except Exception as e:
             await db.rollback()
             raise HTTPException(status_code=500, detail=str(e))
 
     @staticmethod
-    async def update_inventory_item(db: AsyncSession, inventory: InventorySchema):
+    async def update_inventory_item(db: AsyncSession, inventory: InventorySchema, current_user: Employee):
+        if current_user.role == Roles.VIEWER.value:
+            return {"message": "You do not have the necessary permission to update the inventory, contact your admin or inventory manager"}
+            
         record = db.execute(select(Inventory).where(Inventory.sku == inventory.sku)).scalar_one_or_none()
         if not record:
             raise HTTPException(status_code=404, detail="Inventory item not found")
