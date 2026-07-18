@@ -46,7 +46,7 @@ class InventoryCRUD:
         if current_user.role == Roles.VIEWER.value:
             return {"message": "You do not have the necessary permission to update the inventory, contact your admin or inventory manager"}
             
-        record = db.execute(select(Inventory).where(Inventory.sku == inventory.sku)).scalar_one_or_none()
+        record = (await db.execute(select(Inventory).where(Inventory.sku == inventory.sku)).scalar_one_or_none())
         if not record:
             raise HTTPException(status_code=404, detail="Inventory item not found")
         try:

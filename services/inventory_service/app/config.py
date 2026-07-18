@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     KAFKA_CLIENT_ID: str
     KAFKA_BOOTSTRAP_SERVERS: list[str]
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
+    REFRESH_TOKEN_EXPIRE_DAYS: int
     class Config:
         env_file = ".env"
 
