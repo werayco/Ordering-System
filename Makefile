@@ -31,6 +31,9 @@ create-topics:
 run:
 	docker-compose -f shared/docker-compose.yml up -d
 
+stop:
+	docker-compose -f shared/docker-compose.yml down
+
 git:
 	git add .
 	git commit -m "$(filter-out $@,$(MAKECMDGOALS))"

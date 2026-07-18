@@ -1,11 +1,10 @@
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
-from app.schemas import (AccessTokenResponse,ChangePasswordRequest,LoginRequest,RefreshRequest,RegisterRequest,TokenResponse,UserResponse)
-from app.db.crud import UserCrud
+from sqlalchemy import select, func, or_
 from app.models.employee import Employees
+from app.config import settings
 from app.schemas import RegisterEmployee, Roles, RegisterAdmin
-from app.utils import (get_user_from_refresh_token,hash_password,issue_access_token,issue_refresh_token,verify_password)
+from app.utils import (hash_password,verify_password,get_tokens)
 
 class EmployeeController:
     @staticmethod
@@ -15,7 +14,7 @@ class EmployeeController:
         )
         admin_count = result.scalar_one()
 
-        if admin_count >= 1:
+        if admin_count >= settings.ADMIN_COUNT:
             raise HTTPException(status_code=409, detail="An admin already exists")
 
         try:
@@ -36,6 +35,17 @@ class EmployeeController:
     async def register_employee(payload: RegisterEmployee, db: AsyncSession):
         try:
             data = payload.model_dump()
+            result = await db.execute(
+                select(Employees).where(
+                    or_(
+                        Employees.email == data.get("email"),
+                        Employees.username == data.get("username"),
+                    )
+                )
+            )
+            if result.scalars().first():
+                raise HTTPException(status_code=409, detail="Username already exists")
+
             data["role"] = Roles.VIEWER.value
             data["password"] = hash_password(data["password"])
 
@@ -57,7 +67,7 @@ class EmployeeController:
     async def change_password(db: AsyncSession, username:str, new_password: str):
         result = await db.execute(select(Employees).where(Employees.username==username))
         if not result.scalars().first():
-            return {"response": "user not found", "status": "failed"}
+            raise HTTPException(status_code=404, detail="User not found")
         
         passwordHash = hash_password(new_password)
         user = result.scalars().first()
@@ -69,9 +79,5 @@ class EmployeeController:
     async def login(db: AsyncSession, username: str, password: str):
         user = await EmployeeController.get_employee(db, username)
         if not user or not verify_password(password, user.password):
-            return {"response": "invalid username or password", "status": "failed"}
-        
-        return TokenResponse(
-            access_token=issue_access_token(user),
-            refresh_token=issue_refresh_token(user),
-        )
+            return {"response": "invalid username or password", "status": "failed"}       
+        return get_tokens(user)
