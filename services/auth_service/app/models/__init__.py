@@ -1,1 +1,2 @@
-from app.models import User, Employee
+from app.models.employee import Employee
+from app.models.user import User

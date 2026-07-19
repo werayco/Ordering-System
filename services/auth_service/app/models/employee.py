@@ -1,12 +1,12 @@
 from typing import Optional
 from uuid import UUID
 from sqlalchemy import String, Uuid
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 from uuid6 import uuid7
-from services.auth_service.app.db import Base
+from app.db.session import Base
 
-class Employees(Base):
-    __tablename__ = "employees"
+class Employee(Base):
+    __tablename__ = "employee"
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid7)
     email: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String, nullable=False)

@@ -1,9 +1,9 @@
 from typing import Optional
 from uuid import UUID
 from sqlalchemy import String, Uuid
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 from uuid6 import uuid7
-from services.auth_service.app.db import Base
+from app.db.session import Base
 
 class User(Base):
     __tablename__ = "users"
@@ -11,5 +11,4 @@ class User(Base):
     email: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String, nullable=False)
     username: Mapped[str] = mapped_column(String, unique=True, nullable=False, index=True)
-    cover_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     password: Mapped[str] = mapped_column(String, nullable=False)

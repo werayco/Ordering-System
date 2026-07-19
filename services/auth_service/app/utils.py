@@ -16,35 +16,11 @@ import hashlib
 from app.models import User, Employee
 import redis
 
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
+REFRESH_TOKEN_EXPIRE_DAYS = settings.REFRESH_TOKEN_EXPIRE_DAYS
 
-async def get_redis_client():
-    redis_client = redis.Redis(
-        host=settings.REDIS_HOST,
-        port=settings.REDIS_PORT,
-        decode_responses=True,
-    )
-    return redis_client
-
-
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
-REFRESH_TOKEN_EXPIRE_DAYS = 7
-
+redis_client = redis.Redis(host=settings.REDIS_HOST,port=settings.REDIS_PORT,decode_responses=True)
 bearer_scheme = HTTPBearer()
-
-async def check_user_exists(username: str, db: AsyncSession):
-    normalized_username = username.strip().lower()
-    print(f"checking if user exists with username: {normalized_username}")
-    result = await db.execute(select(User).where(User.username == normalized_username))
-    data = result.scalar_one_or_none()
-    user_exists = data is not None
-    print(f"user exists: {user_exists}")
-    return data, user_exists
-
-async def get_receiever_id_by_username(username: str, db: AsyncSession):
-    normalized_username = username.strip().lower()
-    result = await db.execute(select(User).where(User.username == normalized_username))
-    user = result.scalar_one_or_none()
-    return user.id if user else None
 
 def get_current_user_dep(table_name):
     async def _get_current_user(
@@ -66,28 +42,27 @@ def get_current_user_dep(table_name):
         return user
     return _get_current_user
 
-def _build_token(user: User, token_type: str, expires_delta: timedelta) -> str:
+def _build_token(user_id, token_type: str, expires_delta: timedelta, role) -> str:
     now = datetime.now(timezone.utc)
     payload = {
-        "sub": str(user.id),
+        "sub": str(user_id),
         "iat": now,
+        "role": role,
         "exp": now + expires_delta,
         "type": token_type
     }
     return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
-
-async def issue_access_token(user: User) -> str:
-    return _build_token(user, "access", timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+async def issue_access_token(user_id, role) -> str:
+    return _build_token(user_id, "access", timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES), role)
 
 async def issue_refresh_token() -> str:
     return secrets.token_urlsafe(64)
 
-async def get_tokens(user):
-    access = await issue_access_token(user)
+async def get_tokens(user_id, role):
+    access = await issue_access_token(user_id, role)
     refresh = await issue_refresh_token()
-    redis_client = await get_redis_client()
-    await redis_client.set(f"refresh:{user.id}", hash_token(refresh), ex=REFRESH_TOKEN_EXPIRE_DAYS * 86400)
+    await redis_client.set(f"refresh:{user_id}", hash_token(refresh), ex=REFRESH_TOKEN_EXPIRE_DAYS * 86400)
     return {"access_token": access, "refresh_token": refresh}
 
 def hash_password(password: str) -> str:
@@ -104,9 +79,9 @@ def verify_password(password: str, hashed_password: str) -> bool:
 def hash_token(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
 
-async def cache_refresh_tokens(user_id: str,refresh_token: str):
+async def cache_refresh_tokens(user_id: str,refresh_token: str, role):
     key = f"refresh:{user_id}"
-    stored_hash = await get_redis_client().get(key)
+    stored_hash = redis_client.get(key)
 
     if not stored_hash:
         raise Exception("Refresh token has expired")
@@ -114,13 +89,13 @@ async def cache_refresh_tokens(user_id: str,refresh_token: str):
     if stored_hash != hash_token(refresh_token):
         raise Exception("Invalid refresh token")
 
-    new_access_token = await issue_access_token(user_id)
+    new_access_token = await issue_access_token(user_id, role)
     new_refresh_token = await issue_refresh_token()
 
-    await get_redis_client().set(
+    redis_client.set(
         key,
         hash_token(new_refresh_token),
-        ex=REFRESH_TOKEN_EXPIRE_DAYS,
+        ex=REFRESH_TOKEN_EXPIRE_DAYS * 86400,
     )
 
     return {

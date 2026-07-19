@@ -3,12 +3,12 @@ from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas import (ChangePasswordRequest,LoginRequest,RegisterRequest,TokenResponse)
 from app.models.user import User
-from app.utils import (get_tokens, hash_password,issue_access_token,issue_refresh_token,verify_password)
+from app.utils import (get_tokens, hash_password,verify_password)
 
 class AuthController:
     @staticmethod
     async def register(payload: RegisterRequest, db: AsyncSession):
-        result = await db.execute(select(User).where(or_(User.email == payload.get("email"),User.username == payload.get("username"))))
+        result = (await db.execute(select(User).where(or_(User.email == payload.get("email"),User.username == payload.get("username")))))
         if result.scalars().first():
             return {"response": "this user already exists", "status": "failed"}
 
@@ -18,14 +18,18 @@ class AuthController:
 
         await db.commit()
         await db.refresh(user)
-        return get_tokens(user)
+        return {"response": "Registration successful"}
 
     @staticmethod
-    async def login(payload: LoginRequest, db: AsyncSession):
-        user = await db.execute(select(User).where(User.username==payload.username)).scalar_one_or_none()
+    async def login(payload: LoginRequest, db: AsyncSession, table):
+        result = await db.execute(select(table).where(table.username == payload.username))
+        user = result.scalar_one_or_none()
         if not user or not verify_password(payload.password, user.password):
-            return {"response": "invalid username or password", "status": "failed"}
-        return {"response": "login successful", "tokens": get_tokens(user)}
+            raise HTTPException(status_code=401, detail="Invalid username or password")
+
+        role = user.role if hasattr(user, "role") else "user"
+        tokens = await get_tokens(user, role=role)
+        return {"response": "login successful", "tokens": tokens}
 
     @staticmethod
     async def change_password(payload: ChangePasswordRequest,current_user: User,db: AsyncSession):

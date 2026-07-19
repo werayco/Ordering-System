@@ -1,0 +1,150 @@
+version: "3.9"
+
+services:
+  ai_service:
+    build:
+      context: ../services/ai_service
+      dockerfile: Dockerfile
+    container_name: ai_service
+    ports:
+      - "9000:9000"
+    env_file:
+      - ./env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mynet
+
+  auth_service:
+    build:
+      context: ../services/auth_service
+      dockerfile: Dockerfile
+    container_name: auth_service
+    ports:
+      - "9001:9001"
+    env_file:
+      - ./env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9001/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mynet
+
+  inventory_service:
+    build:
+      context: ../services/inventory_service
+      dockerfile: Dockerfile
+    container_name: inventory_service
+    ports:
+      - "9002:9002"
+    env_file:
+      - ./env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9002/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mynet
+
+  notification_service:
+    build:
+      context: ../services/notification_service
+      dockerfile: Dockerfile
+    container_name: notification_service
+    ports:
+      - "9003:9003"
+    env_file:
+      - ./env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9003/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mynet
+
+  order_service:
+    build:
+      context: ../services/order_service
+      dockerfile: Dockerfile
+    container_name: order_service
+    ports:
+      - "9004:9004"
+    env_file:
+      - ./env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9004/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mynet
+
+  payment_service:
+    build:
+      context: ../services/payment_service
+      dockerfile: Dockerfile
+    container_name: payment_service
+    ports:
+      - "9005:9005"
+    env_file:
+      - ./env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9005/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mynet
+
+  search_service:
+    build:
+      context: ../services/search_service
+      dockerfile: Dockerfile
+    container_name: search_service
+    ports:
+      - "9006:9006"
+    env_file:
+      - ./env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9006/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mynet
+
+  user_service:
+    build:
+      context: ../services/user_service
+      dockerfile: Dockerfile
+    container_name: user_service
+    ports:
+      - "9007:9007"
+    env_file:
+      - ./env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9007/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mynet
+
+networks:
+  mynet:
+    external: true

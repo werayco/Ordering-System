@@ -1,16 +1,15 @@
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
-from sqlalchemy import String, Uuid, Integer, Numeric, DateTime, Boolean
+from sqlalchemy import String, Integer, Numeric, DateTime, Boolean
 from sqlalchemy.orm import Mapped, mapped_column
-from uuid6 import uuid7
-from src.db.database import Base
+from app.db.session import Base
 
 
 class Inventory(Base):
     __tablename__ = "inventory"
 
-    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid7)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     price: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)

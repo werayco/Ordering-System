@@ -30,7 +30,8 @@ create-topics:
 
 run:
 	docker-compose -f shared/docker-compose.yml up -d
-
+	docker-compose -f shared/services.docker-compose.yml up -d
+	
 stop:
 	docker-compose -f shared/docker-compose.yml down
 

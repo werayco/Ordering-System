@@ -13,13 +13,13 @@ async def add_inventory_item(db: AsyncSession = Depends(get_db), inventory: Inve
     return InventoryCRUD.add_inventory_item(db, inventory, current_user)
 
 @router.get("/get")
-async def get_inventory_item(db: AsyncSession = Depends(get_db), inventory_id: int = None, current_user: Employee = Depends(get_current_user_dep(Employee))):
-    return InventoryCRUD.get_inventory_item(db, inventory_id)
+async def get_inventory_item(inventory: InventorySchema, db: AsyncSession = Depends(get_db), current_user: Employee = Depends(get_current_user_dep(Employee))):
+    return InventoryCRUD.get_inventory_item(db, inventory)
 
 @router.put("/update")
 async def update_inventory_item(db: AsyncSession = Depends(get_db), inventory: InventorySchema = None, current_user: Employee = Depends(get_current_user_dep(Employee))):
     return InventoryCRUD.update_inventory_item(db, inventory, current_user)
 
 @router.delete("/delete")
-async def delete_inventory_item(db: AsyncSession = Depends(get_db), inventory_id: int = None, current_user: Employee = Depends(get_current_user_dep(Employee))):
-    return InventoryCRUD.delete_inventory_item(db, inventory_id, current_user)
+async def delete_inventory_item(inventory: InventorySchema, db: AsyncSession = Depends(get_db), current_user: Employee = Depends(get_current_user_dep(Employee))):
+    return InventoryCRUD.delete_inventory_item(db, inventory, current_user)

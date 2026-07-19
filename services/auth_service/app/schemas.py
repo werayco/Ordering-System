@@ -32,13 +32,7 @@ class Roles(Enum):
     ADMIN = "admin"
     INVENTORY_MANAGER = "inventory_manager"
     VIEWER = "viewer"
-
-FIELD_PERMISSIONS = {
-    Roles.ADMIN: {"*"},
-    Roles.INVENTORY_MANAGER: {"quantity", "price", "sku", "name", "category"},
-    Roles.VIEWER: {}
-}
-
+    
 class RegisterEmployee(BaseModel):
     email: str
     name: str

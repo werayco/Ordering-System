@@ -9,10 +9,9 @@ from app.db.session import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from jose import jwt, JWTError
 from app.config import settings
+import json
+from app.schemas import Roles
 import redis
-
-ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
-REFRESH_TOKEN_EXPIRE_DAYS = settings.REFRESH_TOKEN_EXPIRE_DAYS
 
 
 async def get_redis_client():
@@ -23,6 +22,12 @@ async def get_redis_client():
     )
     return redis_client
 
+def seralize_to_json(data):
+    try:
+        return json.dumps(data).encode("utf-8")
+    except (TypeError, ValueError) as e:
+        raise ValueError(f"Data serialization error: {e}")
+    
 bearer_scheme = HTTPBearer()
 
 def get_current_user_dep(table_name):
@@ -31,10 +36,13 @@ def get_current_user_dep(table_name):
         db: AsyncSession = Depends(get_db),
     ):
         credentials_exception = HTTPException(status_code=401, detail="Invalid or expired token")
+        permission_exception = HTTPException(status_code=403, detail="You aren't permitted to use this endpoint")
         try:
             payload = jwt.decode(token.credentials, settings.SECRET_KEY, algorithms=["HS256"])
             if payload.get("type") != "access":
                 raise credentials_exception
+            if payload.get("role") == Roles.VIEWER:
+                raise permission_exception
             user_id = UUID(payload["sub"])
         except (JWTError, ValueError, KeyError):
             raise credentials_exception

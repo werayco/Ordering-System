@@ -1,12 +1,11 @@
 import json
 import logging
 from confluent_kafka import Consumer, Producer
-from app.services.elasticsearch_client import ElasticsearchClient
+from app.services.elasticsearch_client import elasticsearch_client
 from app.config import settings
+from app.utils import deserialize_from_json
 
 logger = logging.getLogger(__name__)
-
-
 
 class KafkaConsumer:
     def __init__(self):
@@ -18,7 +17,7 @@ class KafkaConsumer:
         })
         self.dlq_producer = Producer({"bootstrap.servers": settings.KAFKA_BOOTSTRAP_SERVERS})
 
-    def consume(self):
+    async def consume(self):
         self.consumer.subscribe(["inventory"])
         try:
             while True:
@@ -35,8 +34,8 @@ class KafkaConsumer:
 
                 try:
                     key = key_bytes.decode() if key_bytes else None
-                    value = json.loads(value_bytes.decode())
-                    self.ingest_message_into_elastic_search(key, value)
+                    value = deserialize_from_json(value_bytes)
+                    await elasticsearch_client.crud_document(key,value)
                     self.consumer.commit(msg)
                 except Exception as e:
                     logger.error(f"Failed to process message at offset {msg.offset()}: {e}")
@@ -48,8 +47,6 @@ class KafkaConsumer:
         finally:
             self.consumer.close()
 
-    def ingest_message_into_elastic_search(self, key, value):
-        ...
 
     def _send_to_dlq(self, key_bytes, value_bytes, error: str):
         try:
@@ -64,3 +61,4 @@ class KafkaConsumer:
             self.dlq_producer.flush()
         except Exception as dlq_err:
             logger.critical(f"Failed to publish to DLQ, message permanently lost: {dlq_err}")
+
