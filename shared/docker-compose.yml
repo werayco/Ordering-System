@@ -10,7 +10,7 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U deliva -d dv"]
+      test: ["CMD-SHELL", "pg_isready -U rayco -d deliva"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -61,8 +61,8 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server kafka:29092 || exit 1"]
       interval: 10s
-      timeout: 5s
-      retries: 5
+      timeout: 10s
+      retries: 10
     networks:
       - mynet
 
@@ -96,12 +96,13 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - proxy
+      - mynet
 
 volumes:
   db_data:
   esdata:
   kafka_data:
+  redis_data:
 
 networks:
   mynet:

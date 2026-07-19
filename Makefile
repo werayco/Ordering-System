@@ -30,11 +30,15 @@ create-topics:
 
 run:
 	docker-compose -f shared/docker-compose.yml up -d
-	docker-compose -f shared/services.docker-compose.yml up -d
-	
+	docker-compose -f shared/services.docker-compose.yml up -d 
+	python -m shared.seed
+
 stop:
 	docker-compose -f shared/docker-compose.yml down
-
+	docker-compose -f shared/services.docker-compose.yml down
+stop-v:
+	docker-compose -f shared/docker-compose.yml down -v
+	docker-compose -f shared/services.docker-compose.yml down -v
 git:
 	git add .
 	git commit -m "$(filter-out $@,$(MAKECMDGOALS))"

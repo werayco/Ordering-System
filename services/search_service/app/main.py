@@ -1,9 +1,12 @@
 from fastapi import FastAPI
 from app.routers import search_router
+from pyfiglet import Figlet
 from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    f = Figlet(font='slant')
+    print(f.renderText('Auth Service'))
     yield
 
 app = FastAPI(lifespan=lifespan)
