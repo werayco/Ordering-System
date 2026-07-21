@@ -7,13 +7,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.config import settings
-from app.models.user import User
+from app.models.customer import Customer
 from app.db.session import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from jose import jwt, JWTError
 import secrets
 import hashlib
-from app.models import User, Employee
 import redis
 
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES

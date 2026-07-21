@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
-from app.schemas import InventorySchema, InventoryUpdateSchema
+from app.schemas import InventorySchema
 from app.controllers.inventory_controller import InventoryCRUD
 from app.utils import get_current_user_dep
 from app.models.employee import Employee

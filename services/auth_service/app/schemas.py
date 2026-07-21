@@ -30,13 +30,13 @@ class AccessTokenResponse(BaseModel):
 
 class Roles(Enum):
     ADMIN = "admin"
-    INVENTORY_MANAGER = "inventory_manager"
-    VIEWER = "viewer"
-    
+    CUSTOMER = "customer"
+    EMPLOYEE = "employee"
+
 class RegisterEmployee(BaseModel):
     email: str
     name: str
-    role: Roles = "viewer"
+    role: Roles = "employee"
     password: str
 
 class RegisterAdmin(BaseModel):
@@ -47,5 +47,5 @@ class RegisterAdmin(BaseModel):
 class RegisterEmployee(BaseModel):
     email: str
     name: str
-    role: Roles = Roles.VIEWER
+    role: Roles = Roles.EMPLOYEE
     password: str

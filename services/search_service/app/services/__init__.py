@@ -1,0 +1,2 @@
+from app.services.elasticsearch_client import elasticsearch_client
+from app.services.kafka_consumer import kafka_manager

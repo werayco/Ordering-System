@@ -41,7 +41,7 @@ def get_current_user_dep(table_name):
             payload = jwt.decode(token.credentials, settings.SECRET_KEY, algorithms=["HS256"])
             if payload.get("type") != "access":
                 raise credentials_exception
-            if payload.get("role") == Roles.VIEWER:
+            if payload.get("role") == Roles.EMPLOYEE:
                 raise permission_exception
             user_id = UUID(payload["sub"])
         except (JWTError, ValueError, KeyError):

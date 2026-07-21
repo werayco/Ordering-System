@@ -6,11 +6,10 @@ from app.kafka.producer import kafka_manager
 from app.models import Inventory, Employee
 from app.utils import seralize_to_json
 
-
 class InventoryCRUD:
     @staticmethod
     async def add_inventory_item(db: AsyncSession, inventory: InventorySchema, current_user: Employee):
-        if current_user.role == Roles.VIEWER.value:
+        if current_user.role == Roles.EMPLOYEE.value:
             raise HTTPException(status_code=403, detail="You do not have the necessary permission to add a product. Contact your admin or inventory manager.")
 
         try:
@@ -32,8 +31,9 @@ class InventoryCRUD:
         
     @staticmethod
     async def add_inventory_items(db: AsyncSession, inventory: InventorySchemaList, current_user: Employee):
-        if current_user.role == Roles.VIEWER.value:
+        if current_user.role == Roles.EMPLOYEE.value:
             raise HTTPException(status_code=403, detail="You do not have the necessary permission to add a product. Contact your admin or inventory manager.")
+        
         try:
             payloads: list = inventory.model_dump()             
             records = [Inventory(**item) for item in payloads]
@@ -53,7 +53,7 @@ class InventoryCRUD:
                 
     @staticmethod
     async def delete_inventory_item(db: AsyncSession, inventory: InventorySchema, current_user: Employee):
-        if current_user.role == Roles.VIEWER.value:
+        if current_user.role == Roles.EMPLOYEE.value:
             raise HTTPException(status_code=403, detail="You do not have the necessary permission to delete a product from the inventory, contact your admin or inventory manager")
             
         result = (await db.execute(select(Inventory).where(Inventory.sku == inventory.sku)))
@@ -74,7 +74,7 @@ class InventoryCRUD:
 
     @staticmethod
     async def update_inventory_item(db: AsyncSession, inventory: InventorySchema, current_user: Employee):
-        if current_user.role == Roles.VIEWER.value:
+        if current_user.role == Roles.EMPLOYEE.value:
             raise HTTPException(status_code=403, detail="You do not have the necessary permission to update the inventory, contact your admin or inventory manager")
 
         record = (await db.execute(select(Inventory).where(Inventory.sku == inventory.sku)).scalar_one_or_none())

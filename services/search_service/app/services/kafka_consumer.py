@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 from confluent_kafka import Consumer, Producer
@@ -16,12 +17,15 @@ class KafkaConsumer:
             "enable.auto.commit": False,
         })
         self.dlq_producer = Producer({"bootstrap.servers": settings.KAFKA_BOOTSTRAP_SERVERS})
+        self._running = False
 
     async def consume(self):
         self.consumer.subscribe(["inventory"])
+        self._running = True
+        loop = asyncio.get_event_loop()
         try:
-            while True:
-                msg = self.consumer.poll(1.0)
+            while self._running:
+                msg = await loop.run_in_executor(None, self.consumer.poll, 1.0)
                 if msg is None:
                     continue
 
@@ -35,18 +39,17 @@ class KafkaConsumer:
                 try:
                     key = key_bytes.decode() if key_bytes else None
                     value = deserialize_from_json(value_bytes)
-                    await elasticsearch_client.crud_document(key,value)
-                    self.consumer.commit(msg)
+                    await elasticsearch_client.crud_document(key, value)
+                    await loop.run_in_executor(None, self.consumer.commit, msg)
                 except Exception as e:
                     logger.error(f"Failed to process message at offset {msg.offset()}: {e}")
-                    self._send_to_dlq(key_bytes, value_bytes, str(e))
-                    self.consumer.commit(msg) 
-
-        except KeyboardInterrupt:
-            pass
+                    await loop.run_in_executor(None, self._send_to_dlq, key_bytes, value_bytes, str(e))
+                    await loop.run_in_executor(None, self.consumer.commit, msg)
         finally:
             self.consumer.close()
 
+    def stop(self):
+        self._running = False
 
     def _send_to_dlq(self, key_bytes, value_bytes, error: str):
         try:
@@ -62,3 +65,4 @@ class KafkaConsumer:
         except Exception as dlq_err:
             logger.critical(f"Failed to publish to DLQ, message permanently lost: {dlq_err}")
 
+kafka_manager = KafkaConsumer()

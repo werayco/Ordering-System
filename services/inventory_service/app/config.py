@@ -4,7 +4,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     SECRET_KEY: str
     KAFKA_CLIENT_ID: str
-    KAFKA_BOOTSTRAP_SERVERS: list[str]
+    KAFKA_BOOTSTRAP_SERVERS: str
     class Config:
         env_file = ".env"
 

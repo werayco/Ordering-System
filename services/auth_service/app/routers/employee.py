@@ -5,7 +5,7 @@ from app.db.session import get_db
 from app.models.employee import Employee
 from app.utils import (get_current_user_dep, get_tokens)
 from app.controllers.employee_controller import EmployeeController
-from app.controllers.users_auth_controller import AuthController
+from app.controllers.customer_controller import AuthController
 from app.schemas import *
 
 employee_router = APIRouter(prefix="/api/v1/auth/employee", tags=["auth"])

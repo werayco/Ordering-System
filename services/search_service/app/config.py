@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     ELASTICSEARCH_PORT: int
     SECRET_KEY: str
     KAFKA_CLIENT_ID: str
-    KAFKA_BOOTSTRAP_SERVERS: list[str]
+    KAFKA_BOOTSTRAP_SERVERS: str
     class Config:
         env_file = ".env"
 

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, RootModel
 from enum import Enum
 from typing import Union
 
@@ -9,19 +9,14 @@ class InventorySchema(BaseModel):
     sku: Union[str,None]
     quantity: Union[int, None]
 
-class InventorySchemaList(BaseModel):
-    __root__: list[InventorySchema]
+class InventorySchemaList(RootModel[list[InventorySchema]]):
+    pass
 
 class InventoryDeleteSchema(BaseModel):
     sku: str
 
 class Roles(Enum):
     ADMIN = "admin"
-    INVENTORY_MANAGER = "inventory_manager"
-    VIEWER = "viewer"
+    CUSTOMER = "customer"
+    EMPLOYEE = "employee"
 
-FIELD_PERMISSIONS = {
-    Roles.ADMIN: {"*"},
-    Roles.INVENTORY_MANAGER: {"quantity", "price", "sku", "name", "category"},
-    Roles.VIEWER: {}
-}
