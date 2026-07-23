@@ -13,12 +13,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from jose import jwt, JWTError
 import secrets
 import hashlib
-import redis
+from app.db.redis_client import redis_client
 
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 REFRESH_TOKEN_EXPIRE_DAYS = settings.REFRESH_TOKEN_EXPIRE_DAYS
 
-redis_client = redis.Redis(host=settings.REDIS_HOST,port=settings.REDIS_PORT,decode_responses=True)
 bearer_scheme = HTTPBearer()
 
 def get_current_user_dep(table_name):

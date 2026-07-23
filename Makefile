@@ -31,7 +31,13 @@ create-topics:
 run:
 	docker-compose -f shared/docker-compose.yml up -d
 	docker-compose -f shared/services.docker-compose.yml up -d 
-	python -m shared.seed
+
+build:
+	docker-compose -f shared/docker-compose.yml up -d
+	docker-compose -f shared/services.docker-compose.yml up -d 
+	python -m shared.kafka.create_topics --topic inventory --partitions 3 --replication 1
+	python -m shared.kafka.create_topics --topic order --partitions 1 --replication 1
+# 	python -m shared.seed
 
 services-all:
 	docker-compose -f shared/services.docker-compose.yml up --build -d
@@ -39,8 +45,11 @@ services-all:
 service-recreate:
 	docker-compose -f shared/services.docker-compose.yml up --force-recreate -d
 
-stop:
+stop-all:
 	docker-compose -f shared/docker-compose.yml down
+	docker-compose -f shared/services.docker-compose.yml down
+
+stop:
 	docker-compose -f shared/services.docker-compose.yml down
 
 stop-v:

@@ -23,7 +23,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/health")
+@app.get("/api/v1/health")
 async def root():
     return {"message": "Welcome to the Inventory Service", "version": "1.0.0"}
 

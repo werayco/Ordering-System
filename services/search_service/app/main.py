@@ -23,6 +23,6 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.include_router(search_router)
 
-@app.get("/health")
+@app.get("/api/v1/health")
 async def root():
     return {"message": "Welcome to the Search Service", "version": "1.0.0"}

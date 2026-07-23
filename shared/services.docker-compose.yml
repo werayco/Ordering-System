@@ -12,7 +12,7 @@ services:
   #     - ./.env
   #   restart: unless-stopped
   #   healthcheck:
-  #     test: ["CMD-SHELL", "curl -f http://localhost:9000/health || exit 1"]
+  #     test: ["CMD-SHELL", "curl -f http://localhost:9000/api/v1/health || exit 1"]
   #     interval: 10s
   #     timeout: 5s
   #     retries: 5
@@ -32,7 +32,7 @@ services:
       - ./.env
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9001/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:9001/api/v1/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -52,7 +52,7 @@ services:
       - ./.env
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9002/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:9002/api/v1/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -72,7 +72,7 @@ services:
   #     - ./.env
   #   restart: unless-stopped
   #   healthcheck:
-  #     test: ["CMD-SHELL", "curl -f http://localhost:9003/health || exit 1"]
+  #     test: ["CMD-SHELL", "curl -f http://localhost:9003/api/v1/health || exit 1"]
   #     interval: 10s
   #     timeout: 5s
   #     retries: 5
@@ -92,7 +92,7 @@ services:
   #     - ./.env
   #   restart: unless-stopped
   #   healthcheck:
-  #     test: ["CMD-SHELL", "curl -f http://localhost:9004/health || exit 1"]
+  #     test: ["CMD-SHELL", "curl -f http://localhost:9004/api/v1/health || exit 1"]
   #     interval: 10s
   #     timeout: 5s
   #     retries: 5
@@ -112,7 +112,7 @@ services:
   #     - ./.env
   #   restart: unless-stopped
   #   healthcheck:
-  #     test: ["CMD-SHELL", "curl -f http://localhost:9005/health || exit 1"]
+  #     test: ["CMD-SHELL", "curl -f http://localhost:9005/api/v1/health || exit 1"]
   #     interval: 10s
   #     timeout: 5s
   #     retries: 5
@@ -125,14 +125,14 @@ services:
       dockerfile: Dockerfile
     container_name: search_service
     ports:
-      - "9006:9006"
+      - "9007:9007"
     volumes:
       - "../services/search_service:/app/"
     env_file:
       - ./.env
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9006/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:9007/api/v1/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -145,14 +145,14 @@ services:
   #     dockerfile: Dockerfile
   #   container_name: user_service
   #   ports:
-  #     - "9007:9007"
+  #     - "9006:9006"
   #   volumes:
   #     - "../services/user_service:/app/"
   #   env_file:
   #     - ./.env
   #   restart: unless-stopped
   #   healthcheck:
-  #     test: ["CMD-SHELL", "curl -f http://localhost:9007/health || exit 1"]
+  #     test: ["CMD-SHELL", "curl -f http://localhost:9006/api/v1/health || exit 1"]
   #     interval: 10s
   #     timeout: 5s
   #     retries: 5
